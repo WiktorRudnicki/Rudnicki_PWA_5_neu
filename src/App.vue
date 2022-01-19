@@ -153,6 +153,12 @@ export default {
         },
         });
 
+    },
+    async addfriend(friend) {
+      const tx = this.db.transaction('friends', 'readwrite');
+      const store = tx.objectStore('friends');
+      await store.put(friend);
+      await tx.done;
     }
   },
   created(){

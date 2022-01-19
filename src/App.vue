@@ -1,7 +1,6 @@
 <template>
   <div id="app" class="container">
     <h2>indexedDB Testsite</h2>
-    Usable Space {{ totalSpace }} GB
     <div class="d-flex">
       <div class="w-50">
         <h4>My Friends</h4>
@@ -61,7 +60,9 @@
         />
       </div>
       <div class="col-1">
-        <button class="ms-3 btn btn-primary">Find!</button>
+        <button class="ms-3 btn btn-primary" @click="findFriend()">
+          Find!
+        </button>
       </div>
       <div class="col-3">
         <div v-if="searchResult && friend != null">
@@ -70,9 +71,7 @@
             {{ friend.age }}
           </span>
         </div>
-        <span v-else-if="searchResult" class="fw-bold text-danger"
-          >Not found</span
-        >
+        <span v-else-if="searchResult" class="fw-bold text-danger">Not found</span>
       </div>
     </div>
     <div class="mt-3 row align-items-center">
@@ -95,12 +94,12 @@
   </div>
 </template>
 <script>
-import { openDB } from 'idb';
+import { openDB } from "idb";
 export default {
-  name: 'App',
+  name: "App",
   created() {
     this.openDB();
-    if (!window.indexedDB) alert('IndexedDB is not available!');
+    if (!window.indexedDB) alert("IndexedDB is not available!");
   },
   data() {
     return {
@@ -109,79 +108,83 @@ export default {
           id: 1,
           age: 47,
           name: {
-            first: 'Sarah',
-            last: 'Bridges',
+            first: "Sarah",
+            last: "Bridges",
           },
         },
         {
           id: 2,
           age: 26,
           name: {
-            first: 'Madge',
-            last: 'Shaw',
+            first: "Madge",
+            last: "Shaw",
           },
         },
         {
           id: 3,
           age: 51,
           name: {
-            first: 'Jim',
-            last: 'McGee',
+            first: "Jim",
+            last: "McGee",
           },
         },
         {
           id: 4,
           age: 35,
           name: {
-            first: 'Randy',
-            last: 'Shields',
+            first: "Randy",
+            last: "Shields",
           },
         },
         {
           id: 5,
           age: 45,
           name: {
-            first: 'Luann',
-            last: 'Curtis',
+            first: "Luann",
+            last: "Curtis",
           },
         },
       ],
       db: null,
-      id: '',
+      id: "",
       searchResult: false,
       friend: null,
       storedFriends: [],
-      oldName: 'Bridges',
-      newName: 'Cerny',
-      estimate: '',
-      totalSpace: '',
+      oldName: "Bridges",
+      newName: "Cerny",
+      estimate: "",
+      totalSpace: "",
     };
   },
   methods: {
     async openDB() {
-      this.db = await openDB('friendsDB1', 1, {
+      this.db = await openDB("friendsDB1", 1, {
         upgrade(db) {
-          db.createObjectStore('friends', { keyPath: 'id' });
+          db.createObjectStore("friends", { keyPath: "id" });
         },
       });
       this.getStoredFriends();
     },
     async addFriend(friend) {
-      await this.db.put('friends', friend);
+      await this.db.put("friends", friend);
       await this.getStoredFriends();
     },
     async getStoredFriends() {
-      this.storedFriends = await this.db.getAll('friends');
+      this.storedFriends = await this.db.getAll("friends");
     },
     addAllFriends() {
-      this.friends.forEach(friend => {
+      this.friends.forEach((friend) => {
         this.addFriend(friend);
       });
     },
     async RemoveFriend(friend) {
-      await this.db.delete('friends', friend.id);
+      await this.db.delete("friends", friend.id);
       await this.getStoredFriends();
     },
+    async findFriend() {
+      this.friend = await this.db.get('friends', Number(this.id));
+      this.searchResult=true;
+    }
   },
 };
 </script>

@@ -1,6 +1,7 @@
 <template>
   <div id="app" class="container">
     <h2>indexedDB Testsite</h2>
+    Usable Space {{totalspace}} gb
     <div class="d-flex">
       <div class="w-50">
         <h4>My Friends</h4>
@@ -83,6 +84,7 @@
 </template>
 
 <script>
+import { openDB } from 'idb';
 export default {
   name: 'App',
   data() {
@@ -136,10 +138,27 @@ export default {
       storedFriends: [],
       oldName: 'Bridges',
       newName: 'Cerny',
+      estimate: '',
+      totalspace: '',
     };
   },
 
-  methods: {},
+  methods: {
+    async gettotalspace() {
+      this.estimate = await navigator.storage.estimate();
+      this.totalspace = (this.estimate.quota / 10**9).toFixed(2);
+      this.db = await openDB('friendsDB1', 1, {
+        upgrade(db){
+          db.createObjectStore('friends', {keyPath: 'id'});
+        },
+        });
+
+    }
+  },
+  created(){
+    if(!window.indexedDB) alert('IndexedDB is not available!');
+    this.gettotalspace();
+  }
 };
 </script>
 

@@ -1,7 +1,7 @@
 <template>
   <div id="app" class="container">
     <h2>indexedDB Testsite</h2>
-    Usable Space {{totalspace}} gb
+    Usable Space {{ totalSpace }} GB
     <div class="d-flex">
       <div class="w-50">
         <h4>My Friends</h4>
@@ -18,7 +18,9 @@
             ></span>
           </li>
         </ul>
-        <button class="btn btn-primary">Store all</button>
+        <button class="btn btn-primary" @click="addAllFriends()">
+          Store all
+        </button>
       </div>
       <div class="w-50 ms-5">
         <h4>My Friends in the Database</h4>
@@ -37,7 +39,9 @@
               <td>{{ friend.name.last }}</td>
               <td>{{ friend.age }}</td>
               <td>
-                <span class="btn-span ms-3"><i class="fas fa-trash-alt"></i></span>
+                <span class="btn-span ms-3" @click="RemoveFriend(friend)"
+                  ><i class="fas fa-trash-alt"></i
+                ></span>
               </td>
             </tr>
           </tbody>
@@ -49,7 +53,12 @@
         <span class="align-middle">Search id:</span>
       </div>
       <div class="col-1">
-        <input @focus="searchResult = false" v-model="id" class="form-control" type="text" />
+        <input
+          @focus="searchResult = false"
+          v-model="id"
+          class="form-control"
+          type="text"
+        />
       </div>
       <div class="col-1">
         <button class="ms-3 btn btn-primary">Find!</button>
@@ -57,10 +66,13 @@
       <div class="col-3">
         <div v-if="searchResult && friend != null">
           <span class="fw-bold">
-            Found: {{ friend.name.first }} {{ friend.name.last }}, {{ friend.age }}
+            Found: {{ friend.name.first }} {{ friend.name.last }},
+            {{ friend.age }}
           </span>
         </div>
-        <span v-else-if="searchResult" class="fw-bold text-danger">Not found</span>
+        <span v-else-if="searchResult" class="fw-bold text-danger"
+          >Not found</span
+        >
       </div>
     </div>
     <div class="mt-3 row align-items-center">
@@ -82,11 +94,14 @@
     </div>
   </div>
 </template>
-
 <script>
 import { openDB } from 'idb';
 export default {
   name: 'App',
+  created() {
+    this.openDB();
+    if (!window.indexedDB) alert('IndexedDB is not available!');
+  },
   data() {
     return {
       friends: [
@@ -139,35 +154,37 @@ export default {
       oldName: 'Bridges',
       newName: 'Cerny',
       estimate: '',
-      totalspace: '',
+      totalSpace: '',
     };
   },
-
   methods: {
-    async gettotalspace() {
-      this.estimate = await navigator.storage.estimate();
-      this.totalspace = (this.estimate.quota / 10**9).toFixed(2);
+    async openDB() {
       this.db = await openDB('friendsDB1', 1, {
-        upgrade(db){
-          db.createObjectStore('friends', {keyPath: 'id'});
+        upgrade(db) {
+          db.createObjectStore('friends', { keyPath: 'id' });
         },
-        });
-
+      });
+      this.getStoredFriends();
     },
-    async addfriend(friend) {
-      const tx = this.db.transaction('friends', 'readwrite');
-      const store = tx.objectStore('friends');
-      await store.put(friend);
-      await tx.done;
-    }
+    async addFriend(friend) {
+      await this.db.put('friends', friend);
+      await this.getStoredFriends();
+    },
+    async getStoredFriends() {
+      this.storedFriends = await this.db.getAll('friends');
+    },
+    addAllFriends() {
+      this.friends.forEach(friend => {
+        this.addFriend(friend);
+      });
+    },
+    async RemoveFriend(friend) {
+      await this.db.delete('friends', friend.id);
+      await this.getStoredFriends();
+    },
   },
-  created(){
-    if(!window.indexedDB) alert('IndexedDB is not available!');
-    this.gettotalspace();
-  }
 };
 </script>
-
 <style>
 .btn-span {
   cursor: pointer;
